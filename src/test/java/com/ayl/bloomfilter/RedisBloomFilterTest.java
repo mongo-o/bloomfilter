@@ -9,6 +9,8 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.JedisPool;
 
+import java.util.Date;
+
 /**
  * User: AYL
  * Data: 18/6/26 19:59
@@ -19,25 +21,37 @@ public class RedisBloomFilterTest {
     int insertions = 10000;
 
     @Before
-    public void before() {
+    public void before() throws Exception {
         JedisPool jedisPool = new JedisPool("192.168.11.89", 6389);
         RedisBloomFilterBuilder builder = new RedisBloomFilterBuilder(insertions, 0.099, "stringFilter", jedisPool);
         filter = builder.builder();
     }
 
+    /**
+     *  //得到的结果是：
+     *  // 判断一个总共耗时：3406ms
+     *  // 总共耗时：3410ms
+     *  // 首先，这个响应时间并不怎么理想
+     *  // 其次，看上去判断一个和判断多个的时间几乎没有区别。很可能是因为redis是部署在本地，没有tcp延迟的缘故，如果是远程机器，应该差别会很明显
+     */
     @Test
     public void filterTest() {
+        long startTime = new Date().getTime();
         String prefix = "element";
         for (int i = 0; i< insertions; i++) {
             filter.add(prefix + i);
         }
         Assert.assertTrue(filter.contains(prefix + 0));
+        long entTime1 = new Date().getTime();
+        System.out.println("判断一个总共耗时：" + (entTime1 - startTime) + "ms");
         Assert.assertTrue(filter.contains(prefix + (insertions -1) ));
         Assert.assertTrue(filter.contains(prefix + 888));
 
         Assert.assertFalse(filter.contains(prefix + -1));
         Assert.assertFalse(filter.contains(prefix + 100000));
         Assert.assertFalse(filter.contains(prefix + 10001));
+        long entTime = new Date().getTime();
+        System.out.println("总共耗时：" + (entTime - startTime) + "ms");
     }
 
 }

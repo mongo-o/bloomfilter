@@ -1,4 +1,4 @@
-package com.ayl.bloomfilter.hash;/**
+package com.ayl.util.hash;/**
  * Created by 20160701006 on 18/6/26.
  */
 

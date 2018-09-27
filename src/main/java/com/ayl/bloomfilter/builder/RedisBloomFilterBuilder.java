@@ -3,9 +3,11 @@ package com.ayl.bloomfilter.builder;/**
  */
 
 
-import com.ayl.bloomfilter.hash.HashFunction;
-import com.ayl.bloomfilter.hash.MurMur3HashFunction;
+import com.ayl.util.hash.HashFunction;
+import com.ayl.util.hash.MurMur3HashFunction;
 import com.ayl.bloomfilter.impl.RedisBloomFilter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import redis.clients.jedis.JedisPool;
 
 /**
@@ -14,15 +16,16 @@ import redis.clients.jedis.JedisPool;
  * Comment:RedisBloomFilterBuilder
  */
 public class RedisBloomFilterBuilder {
+    private static Logger logger = LogManager.getLogger();
     /**
      * redis的bitmap的最大长度
      */
-    private static final long MAX_SIZE = Integer.MAX_VALUE * 2 ;
+    private static final long MAX_SIZE = Integer.MAX_VALUE * 2L ;
 
     /**
      * 过滤器的N的个数
      */
-    private long insertions;
+    private int insertions;
 
     /**
      * 过滤器的错误率
@@ -35,7 +38,7 @@ public class RedisBloomFilterBuilder {
     private String keyName;
 
     /**
-     *过滤器的M的位数
+     *过滤器的M的位数int
      */
     private int totalSize;
 
@@ -53,19 +56,19 @@ public class RedisBloomFilterBuilder {
 
     private HashFunction hashFunction = new MurMur3HashFunction();
 
-    public RedisBloomFilterBuilder(long insertions, double falseProbability, String keyName, JedisPool jedisPool) {
+    public RedisBloomFilterBuilder(int insertions, double falseProbability, String keyName, JedisPool jedisPool) {
         this.insertions = insertions;
         this.falseProbability = falseProbability;
         this.keyName = keyName;
         this.jedisPool = jedisPool;
     }
 
-    public RedisBloomFilter builder() {
+    public RedisBloomFilter builder() throws Exception{
         checkParamValid();
         return new RedisBloomFilter(this);
     }
 
-    private void checkParamValid() {
+    private void checkParamValid() throws Exception{
         totalSize = optimalNumsOfBits();
         hashFuncNums = optimalNumOfHashFunctions();
         buildDone = true;
@@ -75,12 +78,19 @@ public class RedisBloomFilterBuilder {
      * 计算过滤器的M的位数
      * @return
      */
-    private int optimalNumsOfBits() {
+    private int optimalNumsOfBits() throws Exception{
         if (falseProbability == 0) {
             falseProbability = Double.MIN_VALUE;
         }
 
-        return (int) (-insertions * Math.log(falseProbability) / (Math.log(2) * Math.log(2)));
+        int totalSize = (int) (-insertions * Math.log(falseProbability) / (Math.log(2) * Math.log(2)));
+        logger.debug("计算出总位数M为:" + totalSize);
+        if (totalSize > MAX_SIZE) {
+            String errorMsg = "过滤器的M最大位数为：" + MAX_SIZE + ",而您所计算出来的所需的M的最大位数为：" + totalSize;
+            logger.debug(errorMsg);
+            throw new Exception(errorMsg);
+        }
+        return totalSize;
     }
 
     /**
@@ -88,7 +98,9 @@ public class RedisBloomFilterBuilder {
      * @return
      */
     private int optimalNumOfHashFunctions() {
-        return Math.max(1, (int) Math.round((double) totalSize/ insertions * Math.log(2)));
+        int hashNum = Math.max(1, (int) Math.round((double) totalSize/ insertions * Math.log(2)));
+        logger.debug("计算出哈希函数个数K为：" + hashNum);
+        return hashNum;
     }
 
     public long getInsertions() {
