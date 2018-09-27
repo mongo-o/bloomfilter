@@ -1,4 +1,4 @@
-package com.ayl.bloomfilter;/**
+package com.ayl.itf;/**
  * Created by 20160701006 on 18/6/26.
  */
 

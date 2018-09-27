@@ -15,7 +15,7 @@ import java.util.List;
 public class MurMur3HashFunction extends HashFunction {
     @Override
     public List<Integer> hash(byte[] value, int m, int k) {
-        List<Integer> hashlist = new ArrayList<>();
+        List<Integer> hashlist = new ArrayList<>(k);
         int seed = 0;
         int pos = 0;
         while (pos < k) {
@@ -26,6 +26,22 @@ public class MurMur3HashFunction extends HashFunction {
                 pos++;
             }
         }
+        return hashlist;
+    }
+
+    @Override
+    public List<Integer> hash64(byte[] value, long m, int k) {
+        List<Integer> hashlist = new ArrayList<>();
+//        int seed = 0;
+//        int pos = 0;
+//        while (pos < k) {
+//            seed = MurmurHash.hash64A(value, seed);
+//            int hash = rejectionSample(seed, m);
+//            if (hash != -1) {
+//                hashlist.add(hash);
+//                pos++;
+//            }
+//        }
         return hashlist;
     }
 }

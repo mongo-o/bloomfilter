@@ -20,6 +20,14 @@ public abstract class HashFunction {
      */
     public abstract List<Integer> hash(byte[] value, int m, int k);
 
+    /**
+     * 计算64位hash值
+     * @param value 进行计算hash的输入源对象的二进制数组
+     * @param m hash散列长度范围
+     * @param k hash函数次数
+     * @return
+     */
+    public abstract List<Integer> hash64(byte[] value, long m, int k);
 
     /**
      *

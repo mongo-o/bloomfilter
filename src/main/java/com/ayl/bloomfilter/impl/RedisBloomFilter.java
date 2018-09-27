@@ -2,9 +2,8 @@ package com.ayl.bloomfilter.impl;/**
  * Created by 20160701006 on 18/6/26.
  */
 
-import com.ayl.bloomfilter.BloomFilterI;
+import com.ayl.itf.BloomFilterI;
 import com.ayl.bloomfilter.builder.RedisBloomFilterBuilder;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import redis.clients.jedis.Jedis;
